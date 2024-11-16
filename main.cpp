@@ -5,12 +5,12 @@
 #include<queue>
 
 // Encoding steps
-// -> read file and store frequencies
-// -> create binary lookup tree using those frequencies
+// -> read file and store frequencies *
+// -> create binary lookup tree using those frequencies *
 // -> use tree to generate prefix code table
 // -> write the header of the file
-// 	-> define the starting and the ending of the header 
-// 	-> write out the tree as the header or the frequency table that can be used to recreate the tree
+// 		-> define the starting and the ending of the header 
+// 		-> write out the tree as the header or the frequency table that can be used to recreate the tree
 // -> use the table to encode the file content into the output file (use bit strings and pack them into bytes)
 
 //Custom Comparator
@@ -74,6 +74,18 @@ public:
 
 };
 
+
+//Function to build the prefix table
+void buildPrefTable(BaseNode* root,std::string pref,std::map<char,std::string>& table){
+	if(root->isleaf()){
+		table[((LeafNode*)root)->value()] = pref;
+		return;
+	}
+
+	buildPrefTable(((InternalNode*)root)->left(),pref+"0",table);
+	buildPrefTable(((InternalNode*)root)->right(),pref+"1",table);
+
+}
 
 int main(int argc , char* argv[]){
 
@@ -142,10 +154,17 @@ int main(int argc , char* argv[]){
 		InternalNode* nd = new InternalNode(a,b,nweight);
 		root = nd;
 		cont.push(nd);
-		std::cout<<a->weight()<<":"<<b->weight()<<"-->"<<nd->weight()<<std::endl;
 	}
 
-	std::cout<<root->weight()<<std::endl;
+
+	//Making the prefix table
+	std::map<char,std::string> prefix;
+
+	buildPrefTable(root,"",prefix);
+
+	for(auto it:prefix){
+		std::cout<<it.first<<" -> "<<mp[it.first]<<" -> "<<it.second<<std::endl;
+	}
 
 	return 0;
 }
