@@ -166,5 +166,30 @@ int main(int argc , char* argv[]){
 		std::cout<<it.first<<" -> "<<mp[it.first]<<" -> "<<it.second<<std::endl;
 	}
 
+	//building the header of the compressed file
+	
+	// steps to build the header
+	// -> To build the header we have to encode the freq mapping in a single string
+	// 		-> store each element of the map as "(size of string)#key:value" e.g. "4#c:34"
+	//		-> concatenate all the strings
+	//-> set the start of the header as (size of the concatenated string)#the string
+	//		->this will define the start and ending of the header
+
+	std::string file_header = "";
+
+	for(auto it:mp){
+		std::string key(1, it.first);
+		std::string value = std::to_string(it.second);
+
+		std::string pair = key + ":" + value;
+
+		file_header += std::to_string(pair.size()) + "#" + pair;
+	}
+
+	file_header = std::to_string(file_header.size()) + "#" + file_header;
+
+	std::cout<<"Header of the file is as follows:\n";
+	std::cout<<file_header<<"\n";
+
 	return 0;
 }
