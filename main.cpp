@@ -74,6 +74,31 @@ public:
 
 };
 
+void writeHeader(std::ofstream &outFile, const std::string &header) {
+    size_t length = header.size();
+    outFile.write(reinterpret_cast<const char *>(&length), sizeof(length)); // Write header length
+    outFile.write(header.data(), length);                                   // Write header data
+}
+
+void writeBits(std::ofstream &outFile, unsigned char &buffer, int &bitCount, const std::string &bits) {
+    for (char bit : bits) {
+        buffer = (buffer << 1) | (bit - '0'); // Add bit to buffer
+        bitCount++;
+
+        if (bitCount == 8) {
+            outFile.put(buffer); // Write full byte to file
+            buffer = 0;          // Reset buffer
+            bitCount = 0;
+        }
+    }
+}
+
+void flushBuffer(std::ofstream &outFile, unsigned char &buffer, int bitCount) {
+    if (bitCount > 0) {
+        buffer = buffer << (8 - bitCount); // Pad remaining bits with zeros
+        outFile.put(buffer);
+    }
+}
 
 //Function to build the prefix table
 void buildPrefTable(BaseNode* root,std::string pref,std::map<char,std::string>& table){
@@ -190,6 +215,39 @@ int main(int argc , char* argv[]){
 
 	std::cout<<"Header of the file is as follows:\n";
 	std::cout<<file_header<<"\n";
+
+// Finally Encoding the file and appending it to the header in the output file
+	// -> Create the Outfile which will be a binary file
+	// -> write the header data into the output file
+	// -> append the encoded data to the output file
+
+	// Creating the output file
+	std::ofstream outfile("encoded.bin", std::ios::binary);
+
+	// Check if the file is successfully opened
+    if (!outfile) {
+        std::cerr << "Error: Could not create or open the file!" << std::endl;
+        return 1;
+    }
+
+	//writing the header
+	writeHeader(outfile, file_header);
+
+	// Writing encoded Data
+	unsigned char buffer = 0;
+	int bitcount = 0;
+
+	for(char ch: file_content){
+		std::string bits = prefix[ch];
+		writeBits(outfile, buffer, bitcount, bits);
+	}
+
+	flushBuffer(outfile, buffer, bitcount);
+
+	std::streampos enc_file_size = outfile.tellp();
+	std::cout<<"File successfully encoded!\nSize of old file is: "<<file_size<<"\nSize of New file is: "<<enc_file_size<<"\n";
+
+	outfile.close();
 
 	return 0;
 }
