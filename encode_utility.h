@@ -21,6 +21,8 @@ void flushBuffer(std::ofstream &outFile, unsigned char &buffer, int bitCount) {
         buffer = buffer << (8 - bitCount); // Pad remaining bits with zeros
         outFile.put(buffer);
     }
+    // Write the number of valid bits in the last byte
+    outFile.put(static_cast<char>(bitCount));
 }
 
 

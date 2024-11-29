@@ -22,14 +22,15 @@ int main(int argc , char* argv[]){
 
 //Opening the file and reading it
 
-	std::string file_name = argv[1];
-	std::string file_type = file_name.substr(file_name.size()-4);
+	std::string full_file_name = argv[1];
+	std::string file_type = full_file_name.substr(full_file_name.size()-4);
+	std::string file_name = full_file_name.substr(0,full_file_name.size()-4);
 	if(file_type != ".txt"){
 		std::cerr<<"Invalid file type\n";
 		return 1;
 	}
 
-	std::ifstream file(file_name);
+	std::ifstream file(full_file_name);
 
 	std::string file_content = "";
 
@@ -84,7 +85,7 @@ int main(int argc , char* argv[]){
 
 
 
-	std::ofstream outfile("encoded.bin", std::ios::binary);
+	std::ofstream outfile(file_name + "_encoded.bin", std::ios::binary);
 
 	// Check if the file is successfully opened
     if (!outfile) {

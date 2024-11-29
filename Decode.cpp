@@ -17,17 +17,35 @@
 // 	-> put the decoded characters in the decoded file
 // 	-> Decoding done
 
+BaseNode* readBuff(unsigned char buff, std::string& content, BaseNode* ptr, BaseNode* root, int valid_bits = 0){
+	for(int i = 7;i>=valid_bits==0?0:(8-valid_bits);i--){
+		if(buff & (1<<i)){
+			ptr = ((InternalNode*)ptr)->right();
+		}else{
+			ptr = ((InternalNode*)ptr)->left();
+		}
+		if(ptr->isleaf()){
+			char el = ((LeafNode*)ptr)->value();
+			content.push_back(el);
+			ptr = root;
+		}
+	}
+
+	return ptr;
+}
+
 int main(int argc, char* argv[]){
 
-	std::string file_name = argv[1];
-	std::string file_type = file_name.substr(file_name.size()-4);
+	std::string full_file_name = argv[1];
+	std::string file_type = full_file_name.substr(full_file_name.size()-4);
+	std::string file_name = full_file_name.substr(0,full_file_name.size()-4);
 	if(file_type != ".bin"){
 		std::cerr<<"Invalid file type\n";
 		return 1;
 	}
 
 	//Reading the file
-	std::ifstream file(file_name, std::ios::binary);
+	std::ifstream file(full_file_name, std::ios::binary);
 
 	std::string file_content = "";
 	char byte;
@@ -87,5 +105,32 @@ int main(int argc, char* argv[]){
 
 	std::cout<<"Tree rebuilt!!\n";
 
+	//Decode file using tree
+	BaseNode* ptr = root;
+	std::string decoded_content;
+
+	//storing the number of valid bits in the last byte to avoid corruption
+	int valid_last_bit = static_cast<int>(file_content[file_content.size()-1]);
+	file_content.pop_back();
+
+	std::cout<<"Valid bits are: "<<valid_last_bit<<"\n";
+
+	for(int i = 0;i<file_content.size();i++){
+		unsigned char buff = file_content[i];
+		if(i == file_content.size()-1){
+			ptr = readBuff(buff,decoded_content,ptr,root,valid_last_bit);
+		}else{
+			ptr = readBuff(buff,decoded_content,ptr,root);
+		}
+	}	
+
+	// std::cout<<"Decoded file content is:\n "<<decoded_content<<"\n";
+	std::cout<<"Decoded File Size is: "<<decoded_content.size()<<"\n";
+
+	std::ofstream output(file_name + "_decoded.txt");
+	output<<decoded_content;
+	output.close();
+
+	std::cout<<"File Decoded successfully\n";
 	return 0;
 }
