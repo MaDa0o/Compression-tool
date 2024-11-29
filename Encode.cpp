@@ -6,6 +6,7 @@
 
 #include "huff_tree.h"
 #include "encode_utility.h"
+#include "PrefTable.h"
 
 // Encoding steps
 // -> read file and store frequencies *
@@ -54,7 +55,11 @@ int main(int argc , char* argv[]){
 	for(int i = 0;i<file_size;i++){
 		mp[file_content[i]]++;
 	}	
+	std::cout<<"Size of freq map is: "<<mp.size()<<"\n";
 
+	// for(auto it: mp){
+	// 	std::cout<<it.first<<" -> "<<it.second<<"\n";
+	// }
 
 //Building the lookup binary tree using the frequencies
 
